@@ -1,16 +1,32 @@
 <html>
     <head>
-        <script src="js/internal_ip.js"></script>
+        <script src="js/logger.js"></script>
+        <script src="js/port_scan.js"></script>
+        <script src="js/local_host.js"></script>
         <script src="js/internal_subnet.js"></script>
-        <script src="js/socket.js"></script>
     </head>
     <body>
+        <iframe id="iframe" sandbox="allow-same-origin" style="display: none"></iframe>
         <script>
-            getInternalIP(function(ip){
-                getSubnet(ip, function(net){
-                //    testIP(net[0])
-                    testIP("10.60.32.20")
-                });
+            local_host.info(function(host){
+                if( host.internal ){
+                    logger.info("localhost IP: "+host.ip );
+                    internal_subnet.scan(host.ip, function(net_hosts){
+                        logger.info("found "+net_hosts.length+" subnet hosts...");
+                        net_hosts.forEach(function(net_host){
+                            logger.info("scanning: "+net_host.ip);
+                            port_scan.run(net_host.ip, function(ports){
+                                net_host.ports = ports;
+                               logger.info("ports open on "+net_host.ip+": "+ports.join(","));
+                            });
+                       });
+                    });
+                } else {
+                    logger.info("found external IP: "+host.ip);
+                    /*
+                    TODO: determine information about external IP
+                     */
+                }
             });
         </script>
     </body>
